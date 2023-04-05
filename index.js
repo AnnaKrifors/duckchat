@@ -9,7 +9,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 let socket = require('socket.io');
 const { isLoggedIn } = require('./middleware');
-
+const Chatroom = require('./models/chatroom')
 
 app.use(express.json())
 //const userRoutes = require('./routes/users');
@@ -129,6 +129,39 @@ app.post('/login', passport.authenticate('local', { failureFlash: true, failureR
     req.flash('success', 'welcome back!');
     res.redirect('/chat')
 })
+//här visas alla chatrooms i en lista
+app.get('/ducks/api/channel/',async (req, res) => {
+    const chatrooms = await Chatroom.find({})
+    console.log(chatrooms)
+    res.render('start', { chatrooms })
+})
+
+//skapa ett nytt chatroom
+app.get('/ducks/api/channel/new', (req, res) => {
+    res.render('newChatroom')
+})
+
+app.post('/ducks/api/channel', async (req, res) => {
+    const chatroom = new Chatroom(req.body.chatroom);
+    
+    await chatroom.save()
+    res.redirect(`/ducks/api/channel/${chatroom._id}`)
+})
+
+
+//här visas ett specifikt val av chatroom
+app.get('/ducks/api/channel/:id', async (req, res) => {
+    const chatroom = await Chatroom.findById(req.params.id);
+    res.render('showChat', { chatroom });
+})
+
+
+/*
+app.post('/ducks/api/channel', async (req, res) => {
+    const chatroom = new Chatroom(req.body.chatroom)
+    await chatroom.save()
+    res.redirect(`/ducks/api/channel${chatroom._id}`)
+})*/
 
 app.get('/chat', isLoggedIn,async (req, res) => {
 if(!isLoggedIn){
