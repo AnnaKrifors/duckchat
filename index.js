@@ -10,6 +10,8 @@ const flash = require('connect-flash');
 let socket = require('socket.io');
 const { isLoggedIn } = require('./middleware');
 const Chatroom = require('./models/chatroom')
+const Post = require('./models/post')
+const methodOverride = require('method-override')
 
 app.use(express.json())
 //const userRoutes = require('./routes/users');
@@ -29,6 +31,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'))
 /*
 const sessionConfig = {
     sercret: 'thismustbeabettersecret',
@@ -140,7 +143,7 @@ app.get('/ducks/api/channel/',async (req, res) => {
 app.get('/ducks/api/channel/new', (req, res) => {
     res.render('newChatroom')
 })
-
+//denna måste göras om till PUT!!!
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom);
     
@@ -152,10 +155,42 @@ app.post('/ducks/api/channel', async (req, res) => {
 //här visas ett specifikt val av chatroom
 app.get('/ducks/api/channel/:id', async (req, res) => {
     const chatroom = await Chatroom.findById(req.params.id);
-    res.render('showChat', { chatroom });
+    const posts = await Post.find({})
+    res.render('showChat', { chatroom, posts });
 })
 
 
+app.post('/ducks/api/channel/:id', async (req, res) => {
+    const chatroomId = req.params.id;
+    const newPost = req.body;
+    try {
+      const post = await Post.create(newPost);
+      const chatroom = await Chatroom.findById(chatroomId);
+      console.log(chatroomId); // check chatroomId value
+      console.log(chatroom.posts); // check chatroom.posts value
+      chatroom.posts.push(post._id);
+      await chatroom.save();
+      res.redirect(`/ducks/api/channel/${chatroom._id}`);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error creating new post');
+    }
+  });
+    
+ 
+/*
+app.put('/ducks/api/channel/:id', async(req, res) => {
+    const { id } = req.params;
+    const newPost = req.body;
+    //res.send(newPost)
+    
+    const chatroom = await Chatroom.findByIdAndUpdate(id,{...req.body})
+    
+    
+    res.redirect(`/ducks/api/channel/${chatroom._id}`)
+
+})
+*/
 /*
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom)

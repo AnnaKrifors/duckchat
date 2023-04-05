@@ -9,7 +9,32 @@
 <body>
     
     <h1><%= chatroom.name  %></h1>
-    <h2>syns det här?</h2>
+
+    <ul>
+        <% for( let post of posts){ %>
+            <li><%= post.username %>
+                <%= post.message  %>
+                
+            </li>
+        <% } %>
+    </ul>
+
+
+   
+
+        <form action="/ducks/api/channel/<%= chatroom._id %>" method="post">
+        <label for="username">name</label>
+        <input name="username" id="username" type="text" placeholder="name">
+        <label for="message">your message</label>
+        <input name="message" id="message" type="text" placeholder="Message">
+        <button id="send">Send</button>
+    </form>
+    </div>
+
+
+
+
+  
    
 
 </html>
