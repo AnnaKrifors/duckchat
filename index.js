@@ -14,7 +14,7 @@ const { isLoggedIn } = require('./middleware');
 app.use(express.json())
 //const userRoutes = require('./routes/users');
 
-mongoose.connect('mongodb://127.0.0.1:27017/annachat', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://krifors:LKWsNIAMvoOC5Jeq@duckchat.blafzko.mongodb.net/?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
 .then(() => {
     console.log('mongo connection open!')
 })
@@ -188,3 +188,5 @@ io.on('connection', function(socket){
 
 //för att kolla om någon är inloggad får man automatiskt med 
 //isAuthenticate med från passport.
+
+//LKWsNIAMvoOC5Jeq password for db mongo
