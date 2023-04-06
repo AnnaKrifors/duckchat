@@ -11,6 +11,8 @@ let socket = require('socket.io');
 const { isLoggedIn } = require('./middleware');
 const Chatroom = require('./models/chatroom')
 const Post = require('./models/post')
+const Chat = require('./models/chat')
+const Message = require('./models/message')
 const methodOverride = require('method-override')
 
 app.use(express.json())
@@ -241,13 +243,31 @@ app.use(express.static('views'));
 
 let io = socket(server);
 
+
 io.on('connection', function(socket){
-    console.log('made socket connection', socket.id)
+    console.log('made socket connection', socket.id);
+    Chat.find({}, function(err, messages) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      socket.emit('allMessages', messages);
+    });
+
     //här tas all data från frontend och skickas till ALLA sockets
     //servern säger när jag hör that chatmessage kör jag denna function
     //2
     socket.on('chat', function(data){
-        io.sockets.emit('chat', data)
+        io.sockets.emit('chat', data);
+        const chat = new Chat({
+            handle: data.handle,
+            message: data.message
+          });
+          chat.save((err) => {
+            if (err) {
+              console.error(err);
+            }
+        });
     })
     //här tar vi emot typing infon och broadcastar till alla sockets förutom den som skrev
     socket.on('typing', function(data){
@@ -255,6 +275,8 @@ io.on('connection', function(socket){
 
     })
 })
+ 
+
 
 //local mongoose plug in har methoden user.register
 

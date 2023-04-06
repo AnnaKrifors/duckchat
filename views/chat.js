@@ -22,8 +22,7 @@ btn.addEventListener('click', function(){
         handle: handle.value
     })
     message.value = '';
-})
-
+});
 //här tar gör vi att när man skriver ett meddelande så aktiveras keypress och vi 
 //skickar den infon till backend
 
@@ -32,15 +31,21 @@ message.addEventListener("keypress", (KeyboardEvent) => {
         console.log("Enter was pressed!");
         btn.click()
     }
-})
+});
 
 //listen for events
 //3
 socket.on('chat', function(data){
     feedback.innerHTML = '';
     output.innerHTML += '<p><strong>' + data.handle + ':</strong>' + data.message + '</p>';
-})
+});
 //här tar vi tillbaka infon från backend och skickar ut i feedback diven
 socket.on('typing', function(data){
     feedback.innerHTML = '<p><em>' + data + '' + ' is typing a message...</em></p>';
-})
+});
+
+socket.on('allMessages', function(messages) {
+    messages.forEach(function(message) {
+      output.innerHTML += '<p><strong>' + message.handle + ':</strong> ' + message.message + '</p>';
+    });
+  });
