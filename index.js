@@ -132,7 +132,7 @@ app.get('/login', (req, res) =>{
 app.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login'}) ,async (req, res) => {
     
     req.flash('success', 'welcome back!');
-    res.redirect('/chat')
+    res.redirect('/ducks/api/channel')
 })
 //här visas alla chatrooms i en lista
 app.get('/ducks/api/channel/',async (req, res) => {
@@ -145,6 +145,21 @@ app.get('/ducks/api/channel/',async (req, res) => {
 app.get('/ducks/api/channel/new', (req, res) => {
     res.render('newChatroom')
 })
+app.post('/ducks/api/channel', async (req, res) => {
+    const newChatroom = req.body;
+  
+    try {
+      // Create a new chatroom document with the provided name and description
+      const chatroom = await Chatroom.create(newChatroom);
+  
+      res.redirect(`/ducks/api/channel/${chatroom._id}`)
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error creating new chatroom');
+    }
+  });
+
+/*
 //denna måste göras om till PUT!!!
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom);
@@ -152,7 +167,7 @@ app.post('/ducks/api/channel', async (req, res) => {
     await chatroom.save()
     res.redirect(`/ducks/api/channel/${chatroom._id}`)
 })
-
+*/
 
 //här visas ett specifikt val av chatroom
 app.get('/ducks/api/channel/:id', async (req, res) => {
@@ -162,6 +177,29 @@ app.get('/ducks/api/channel/:id', async (req, res) => {
 })
 
 
+
+app.post('/ducks/api/channel/:id', async (req, res) => {
+    const chatroomId = req.params.id;
+    //res.send(chatroomId)
+    const desiredChatroom = await Chatroom.findById(chatroomId)
+    const desiredChatroomId = desiredChatroom._id;
+    //res.send(desiredChatroomId)
+    if(chatroomId == desiredChatroomId){
+        const newPost = req.body;
+        const post = await Post.create(newPost);
+        //const chatroom = await Chatroom.findById(chatroomId);
+        desiredChatroom.posts.push(post._id);
+        await desiredChatroom.save();
+        res.redirect(`/ducks/api/channel/${desiredChatroom._id}`);
+    }
+    else{
+        res.status(500).send('Error creating new post');
+    }
+});
+
+
+
+/*
 app.post('/ducks/api/channel/:id', async (req, res) => {
     const chatroomId = req.params.id;
     const newPost = req.body;
@@ -178,7 +216,7 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
       res.status(500).send('Error creating new post');
     }
   });
-    
+   */ 
   app.delete('/ducks/api/channel/:id', async (req, res) => {
     const { id } = req.params;
     await Chatroom.findByIdAndDelete(id);
