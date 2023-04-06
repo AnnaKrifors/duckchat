@@ -177,7 +177,11 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
     }
   });
     
- 
+  app.delete('/ducks/api/channel/:id', async (req, res) => {
+    const { id } = req.params;
+    await Chatroom.findByIdAndDelete(id);
+    res.redirect('/ducks/api/channel');
+})
 /*
 app.put('/ducks/api/channel/:id', async(req, res) => {
     const { id } = req.params;
