@@ -9,6 +9,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 let socket = require('socket.io');
 const { isLoggedIn } = require('./middleware');
+const { isAdmin } = require('./middleware')
 const Chatroom = require('./models/chatroom')
 const Post = require('./models/post')
 const Chat = require('./models/chat')
@@ -66,7 +67,12 @@ app.use(passport.initialize());
 //och methoden kommer från passport local mongoose.
 passport.use(new LocalStrategy(User.authenticate()));
 
-
+app.use((req, res, next) => {
+    res.locals.currentUser = req.user;
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
+})
 
 //dessa methoder kommer fron mongooselocal
 //hur spara vi data i en session
@@ -98,6 +104,8 @@ app.get('/', (req, res) => {
     res.send('workd')
 });
 
+
+
 app.get('/register', (req, res) => {
     res.render('register',{ messages: req.flash('success', 'error')})
 })
@@ -121,6 +129,7 @@ app.post('/register', async (req, res) => {
 //local routes
 
 app.get('/login', (req, res) =>{
+    
     res.render('login', { messages: req.flash('success', 'error')})
 })
 
@@ -130,10 +139,13 @@ app.get('/login', (req, res) =>{
 //lägga en strategi som parameter, local (kan va google, twitter också tex)
 //failureflash ger ett meddelande, failureredirect kör oss till /login om nåt går fel
 app.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login'}) ,async (req, res) => {
-    
+    console.log(req.user._id)
     req.flash('success', 'welcome back!');
     res.redirect('/ducks/api/channel')
 })
+
+
+
 //här visas alla chatrooms i en lista
 app.get('/ducks/api/channel/',async (req, res) => {
     const chatrooms = await Chatroom.find({})
@@ -145,19 +157,22 @@ app.get('/ducks/api/channel/',async (req, res) => {
 app.get('/ducks/api/channel/new', (req, res) => {
     res.render('newChatroom')
 })
+
 app.post('/ducks/api/channel', async (req, res) => {
-    const newChatroom = req.body;
+    const chatroom = new Chatroom(req.body.chatroom);
+    await chatroom.save();
   
-    try {
-      // Create a new chatroom document with the provided name and description
-      const chatroom = await Chatroom.create(newChatroom);
+    const postCollection = new chatroom.model({
+      // add post properties here
+      username: String,
+      message: String
+    });
+    await postCollection.save();
   
-      res.redirect(`/ducks/api/channel/${chatroom._id}`)
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error creating new chatroom');
-    }
+    res.redirect(`/ducks/api/channel/${chatroom._id}`);
   });
+
+
 
 /*
 //denna måste göras om till PUT!!!
@@ -169,22 +184,24 @@ app.post('/ducks/api/channel', async (req, res) => {
 })
 */
 
+
+
 //här visas ett specifikt val av chatroom
 app.get('/ducks/api/channel/:id', async (req, res) => {
     const chatroom = await Chatroom.findById(req.params.id);
-    const posts = await Post.find({})
+    const posts = await Post.find({_id: chatroom.posts})
     res.render('showChat', { chatroom, posts });
 })
 
 
-
+/*
 app.post('/ducks/api/channel/:id', async (req, res) => {
     const chatroomId = req.params.id;
     //res.send(chatroomId)
     const desiredChatroom = await Chatroom.findById(chatroomId)
     const desiredChatroomId = desiredChatroom._id;
     //res.send(desiredChatroomId)
-    if(chatroomId == desiredChatroomId){
+    if(chatroomId == desiredChatroomId || desiredChatroom == (`${chatroom_}${desiredChatroom}`)){
         const newPost = req.body;
         const post = await Post.create(newPost);
         //const chatroom = await Chatroom.findById(chatroomId);
@@ -196,10 +213,10 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
         res.status(500).send('Error creating new post');
     }
 });
+*/
 
 
 
-/*
 app.post('/ducks/api/channel/:id', async (req, res) => {
     const chatroomId = req.params.id;
     const newPost = req.body;
@@ -216,13 +233,13 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
       res.status(500).send('Error creating new post');
     }
   });
-   */ 
+  
   app.delete('/ducks/api/channel/:id', async (req, res) => {
     const { id } = req.params;
     await Chatroom.findByIdAndDelete(id);
     res.redirect('/ducks/api/channel');
 })
-/*
+
 app.put('/ducks/api/channel/:id', async(req, res) => {
     const { id } = req.params;
     const newPost = req.body;
@@ -234,7 +251,7 @@ app.put('/ducks/api/channel/:id', async(req, res) => {
     res.redirect(`/ducks/api/channel/${chatroom._id}`)
 
 })
-*/
+
 /*
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom)
@@ -270,6 +287,17 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 })
 */
+
+
+//teeesting!
+app.get('/ducks/api/broadcast', (req, res)=> {
+    res.render('broadcast')
+})
+
+app.post('/ducks/api/broadcast',isAdmin, (req, res) => {
+    res.send(req.body)
+})
+
 const server = app.listen(3000, function(){
     console.log('listening for requests on port 3000,');
 });

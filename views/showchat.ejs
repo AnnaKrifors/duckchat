@@ -5,12 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>show</title>
+ 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
 </head>
 <body>
     
     <h1><%= chatroom.name  %></h1>
+    
 
     <ul>
         <% for( let post of posts){ %>
@@ -34,8 +35,7 @@
         <button id="send">Send</button>
     </div>
     <a href="/logout">logOut!</a>
-    
-   <script src="/chat.js"></script>
+
 
 
    
@@ -59,6 +59,6 @@
 
 
   
-   
-
+       
+    <script src="/chat.js"></script>
 </html>
