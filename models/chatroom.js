@@ -8,7 +8,8 @@ const chatroomSchema = new mongoose.Schema({
     posts: {
         type: [mongoose.Schema.Types.ObjectId],
         default: []
-      }
+      },
+   
    
 })
 

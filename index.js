@@ -12,9 +12,11 @@ const { isLoggedIn } = require('./middleware');
 const { isAdmin } = require('./middleware')
 const Chatroom = require('./models/chatroom')
 const Post = require('./models/post')
+const Broadcast = require('./models/broadcast')
 const Chat = require('./models/chat')
 const Message = require('./models/message')
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
+const chat = require('./models/chat');
 
 app.use(express.json())
 //const userRoutes = require('./routes/users');
@@ -153,10 +155,7 @@ app.get('/ducks/api/channel/',async (req, res) => {
     res.render('start', { chatrooms })
 })
 
-//skapa ett nytt chatroom
-app.get('/ducks/api/channel/new', (req, res) => {
-    res.render('newChatroom')
-})
+
 
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom);
@@ -172,7 +171,55 @@ app.post('/ducks/api/channel', async (req, res) => {
     res.redirect(`/ducks/api/channel/${chatroom._id}`);
   });
 
-
+//skapa ett nytt chatroom
+app.get('/ducks/api/channel/new', (req, res) => {
+    res.render('newChatroom')
+})
+/*
+app.put('/ducks/api/channel/', async (req, res) => {
+    try {
+      const existingChatroom = await Chatroom.findOne({ name: req.body.name });
+      if (existingChatroom) {
+        return res.status(409).send('Chatroom with this name already exists.');
+      }
+  
+      const chatroom = new Chatroom({
+        name: req.body.name
+      });
+  
+      await chatroom.save();
+  
+      res.redirect("/ducks/api/channel/new");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send('Internal server error');
+    }
+  });
+*/
+/*
+app.put('/ducks/api/channel',async(req, res) => {
+    const chatroom = req.body.chatroom;
+ res.send(chatroom)
+})
+*/
+app.put('/ducks/api/channel', async (req, res) => {
+    try{
+        const existingChatroom = await Chatroom.findOne({ name: req.body.chatroom.name});
+        if(!existingChatroom){
+            const chatroom = new Chatroom(req.body.chatroom);
+        await chatroom.save();
+        res.redirect(`/ducks/api/channel/${chatroom._id}`);
+             
+        }else{
+            console.log('Chatroom with this name already exists.');
+            return res.status(409).send('Chatroom with this name already exists.');
+        }
+    }catch(err){
+        console.error(err);
+        return res.status(500).send('Internal server error');
+    }
+    
+})
 
 /*
 //denna måste göras om till PUT!!!
@@ -240,6 +287,10 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
     res.redirect('/ducks/api/channel');
 })
 
+
+
+
+/*
 app.put('/ducks/api/channel/:id', async(req, res) => {
     const { id } = req.params;
     const newPost = req.body;
@@ -251,14 +302,14 @@ app.put('/ducks/api/channel/:id', async(req, res) => {
     res.redirect(`/ducks/api/channel/${chatroom._id}`)
 
 })
-
+*/
 /*
 app.post('/ducks/api/channel', async (req, res) => {
     const chatroom = new Chatroom(req.body.chatroom)
     await chatroom.save()
     res.redirect(`/ducks/api/channel${chatroom._id}`)
 })*/
-
+/*
 app.get('/chat', isLoggedIn,async (req, res) => {
 if(!isLoggedIn){
     req.flash('error', 'you have to login!')
@@ -267,7 +318,7 @@ if(!isLoggedIn){
     
     res.render('chat', { messages: req.flash('success')})
 })
-
+*/
 app.get('/logout', (req, res) => {
     req.logout(function(err) {
       if (err) {
@@ -288,15 +339,31 @@ app.get('/logout', (req, res) => {
 })
 */
 
-
 //teeesting!
-app.get('/ducks/api/broadcast', (req, res)=> {
-    res.render('broadcast')
-})
 
-app.post('/ducks/api/broadcast',isAdmin, (req, res) => {
-    res.send(req.body)
+app.get('/ducks/api/broadcast', async (req, res)=> {
+    const broadcasts = await Broadcast.find({})
+    console.log(broadcasts)
+    res.render('broadcast', { broadcasts })
+
 })
+/*
+app.post('/ducks/api/broadcast',async (req, res) => {
+    const newPost = req.body;
+    try{
+    const post = await Post.create(newPost);    
+    const broadcast = new Broadcast(req.body.broadcast);
+    broadcast.push(newPost)
+    await broadcast.save();
+    res.redirect('/ducks/api/broadcast')
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating new post');
+      }
+})
+*/
+
+
 
 const server = app.listen(3000, function(){
     console.log('listening for requests on port 3000,');

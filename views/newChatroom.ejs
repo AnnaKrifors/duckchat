@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>make a new Chatroom</h1>
-    <form action="/ducks/api/channel" method="post">
+    <form action="/ducks/api/channel/?_method=PUT" method="post">
     <label for="name">Name of the Chatroom</label>
    <input type="text" id="name" name="chatroom[name]">
    <button>Create!</button>

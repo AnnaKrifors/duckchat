@@ -8,6 +8,19 @@
 </head>
 <body>
     <h1>broadcast</h1>
+ 
+    <ul>
+        
+        <% for( let broadcast of broadcasts){ %>
+            <li><%= broadcast.username %>
+                <%= broadcast.message  %>
+                
+            </li>
+        <% } %>
+    </ul>
+    
+
+
 
     <form action="/ducks/api/broadcast/" method="post">
         <label for="username">name</label>
