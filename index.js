@@ -149,10 +149,14 @@ app.post('/login', passport.authenticate('local', { failureFlash: true, failureR
 
 
 //här visas alla chatrooms i en lista
-app.get('/ducks/api/channel/',async (req, res) => {
+app.get('/ducks/api/channel/',isLoggedIn, async (req, res) => {
+    if(isLoggedIn){
     const chatrooms = await Chatroom.find({})
     console.log(chatrooms)
     res.render('start', { chatrooms })
+    }else{
+        res.redirect('/login')
+    }
 })
 
 
@@ -172,8 +176,12 @@ app.post('/ducks/api/channel', async (req, res) => {
   });
 
 //skapa ett nytt chatroom
-app.get('/ducks/api/channel/new', (req, res) => {
+app.get('/ducks/api/channel/new', isLoggedIn, (req, res) => {
+    if(isLoggedIn){
     res.render('newChatroom')
+    }else{
+        res.redirect('/login')
+    }
 })
 /*
 app.put('/ducks/api/channel/', async (req, res) => {
@@ -235,9 +243,10 @@ app.post('/ducks/api/channel', async (req, res) => {
 
 //här visas ett specifikt val av chatroom
 app.get('/ducks/api/channel/:id', async (req, res) => {
+    const broadcasts = await Broadcast.find({})
     const chatroom = await Chatroom.findById(req.params.id);
     const posts = await Post.find({_id: chatroom.posts})
-    res.render('showChat', { chatroom, posts });
+    res.render('showChat', { chatroom, posts, broadcasts });
 })
 
 
@@ -281,10 +290,16 @@ app.post('/ducks/api/channel/:id', async (req, res) => {
     }
   });
   
-  app.delete('/ducks/api/channel/:id', async (req, res) => {
+  app.delete('/ducks/api/channel/:id', isAdmin, async (req, res) => {
+    if(isAdmin){
     const { id } = req.params;
     await Chatroom.findByIdAndDelete(id);
     res.redirect('/ducks/api/channel');
+    }else{
+        
+        
+        
+    }
 })
 
 
@@ -341,27 +356,37 @@ app.get('/logout', (req, res) => {
 
 //teeesting!
 
-app.get('/ducks/api/broadcast', async (req, res)=> {
+app.get('/ducks/api/broadcast', isAdmin, async (req, res)=> {
+    if(isAdmin){
     const broadcasts = await Broadcast.find({})
     console.log(broadcasts)
     res.render('broadcast', { broadcasts })
+    }
 
 })
-/*
-app.post('/ducks/api/broadcast',async (req, res) => {
+
+app.post('/ducks/api/broadcast', isAdmin, async (req, res) => {
     const newPost = req.body;
+    const post = await Post.create(newPost)
+    const broadcast = await Broadcast.create(newPost)
+    broadcast.posts.push(post._id)
+    await broadcast.save();
+    res.redirect('/ducks/api/broadcast')
+    //res.send(newPost)
+    /*
     try{
     const post = await Post.create(newPost);    
-    const broadcast = new Broadcast(req.body.broadcast);
-    broadcast.push(newPost)
+    const broadcast = await Broadcast.findOne(req.body.broadcast);
+    broadcast.posts.push(newPost)
     await broadcast.save();
     res.redirect('/ducks/api/broadcast')
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating new post');
       }
+      */
 })
-*/
+
 
 
 

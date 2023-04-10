@@ -22,8 +22,17 @@
         <% } %>
     </ul>
     
+    <h2>broadcasts</h2>
+    <ul>
+        <% for( let broadcast of broadcasts){ %>
+            <li><%= broadcast.username %>
+                <%= broadcast.message  %>
+                
+            </li>
+        <% } %>
+    </ul>
 
-    <h1>Anna Chat!</h1>
+   <!--<h1>Anna Chat!</h1>
     
     <div id="mario-chat" >
         <div id="chat-window">
@@ -34,8 +43,8 @@
         <input id="message" type="text" placeholder="Message">
         <button id="send">Send</button>
     </div>
-    <a href="/logout">logOut!</a>
-
+   
+    --> 
 
 
    
@@ -49,12 +58,17 @@
     </form>
     </div>
 
+ 
+
     <div>
         <form action="/ducks/api/channel/<%=chatroom._id%>?_method=DELETE" method="post">
             <button>Delete this Chatroom!</button>
         </form>
     </div>
 
+    <button onclick="location.href='/ducks/api/channel'">Back to all channels</button>
+
+    <a href="/logout">logOut!</a>
 
 
 
