@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const chatroomSchema = new mongoose.Schema({
     name: {
         type: String
-    },
+    }
+    ,
     posts: {
         type: [mongoose.Schema.Types.ObjectId],
         default: []
